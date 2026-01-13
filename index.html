@@ -289,29 +289,30 @@
             <div class="bg-evoq-onyx p-8 lg:p-12 border border-white/10 shadow-2xl relative overflow-hidden group">
                  <div class="absolute inset-0 bg-gradient-to-tr from-evoq-gold/0 via-evoq-gold/0 to-evoq-gold/5 opacity-0 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
 
-                <form class="space-y-8 relative z-10">
-                    <div class="grid grid-cols-2 gap-6">
-                         <div class="col-span-2 sm:col-span-1">
-                            <label class="block text-xs uppercase tracking-widest text-evoq-gold mb-2 font-bold">First Name</label>
-                            <input type="text" class="w-full px-0 py-3 bg-transparent border-b-2 border-white/20 text-white focus:border-evoq-gold outline-none transition text-lg placeholder-slate-600" placeholder="Enter your name">
-                        </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <label class="block text-xs uppercase tracking-widest text-evoq-gold mb-2 font-bold">Last Name</label>
-                            <input type="text" class="w-full px-0 py-3 bg-transparent border-b-2 border-white/20 text-white focus:border-evoq-gold outline-none transition text-lg placeholder-slate-600" placeholder="Enter last name">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs uppercase tracking-widest text-evoq-gold mb-2 font-bold">Business Email</label>
-                        <input type="email" class="w-full px-0 py-3 bg-transparent border-b-2 border-white/20 text-white focus:border-evoq-gold outline-none transition text-lg placeholder-slate-600" placeholder="you@company.com">
-                    </div>
-                    <div>
-                        <label class="block text-xs uppercase tracking-widest text-evoq-gold mb-2 font-bold">Phone Number</label>
-                        <input type="tel" class="w-full px-0 py-3 bg-transparent border-b-2 border-white/20 text-white focus:border-evoq-gold outline-none transition text-lg placeholder-slate-600" placeholder="+254 7...">
-                    </div>
-                    <button type="button" class="w-full bg-gradient-to-r from-evoq-gold to-evoq-goldlight text-evoq-onyx font-bold text-lg py-5 hover:shadow-[0_0_20px_rgba(207,179,120,0.5)] transition duration-300 tracking-wider uppercase">
-                        Submit Request
-                    </button>
-                </form>
+                <form id="zapierForm" class="space-y-8 relative z-10">
+    <div class="grid grid-cols-2 gap-6">
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block text-xs uppercase tracking-widest text-evoq-gold mb-2 font-bold">First Name</label>
+            <input type="text" name="first_name" required class="w-full px-0 py-3 bg-transparent border-b-2 border-white/20 text-white focus:border-evoq-gold outline-none transition text-lg placeholder-slate-600" placeholder="Enter your name">
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block text-xs uppercase tracking-widest text-evoq-gold mb-2 font-bold">Last Name</label>
+            <input type="text" name="last_name" required class="w-full px-0 py-3 bg-transparent border-b-2 border-white/20 text-white focus:border-evoq-gold outline-none transition text-lg placeholder-slate-600" placeholder="Enter last name">
+        </div>
+    </div>
+    <div>
+        <label class="block text-xs uppercase tracking-widest text-evoq-gold mb-2 font-bold">Business Email</label>
+        <input type="email" name="email" required class="w-full px-0 py-3 bg-transparent border-b-2 border-white/20 text-white focus:border-evoq-gold outline-none transition text-lg placeholder-slate-600" placeholder="you@company.com">
+    </div>
+    <div>
+        <label class="block text-xs uppercase tracking-widest text-evoq-gold mb-2 font-bold">Phone Number</label>
+        <input type="tel" name="phone" required class="w-full px-0 py-3 bg-transparent border-b-2 border-white/20 text-white focus:border-evoq-gold outline-none transition text-lg placeholder-slate-600" placeholder="+254 7...">
+    </div>
+    <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-evoq-gold to-evoq-goldlight text-evoq-onyx font-bold text-lg py-5 hover:shadow-[0_0_20px_rgba(207,179,120,0.5)] transition duration-300 tracking-wider uppercase disabled:opacity-50">
+        Submit Request
+    </button>
+    <p id="formStatus" class="text-center text-sm mt-4 hidden"></p>
+</form>
             </div>
         </div>
     </section>
@@ -339,6 +340,46 @@
             </div>
         </div>
     </footer>
+<script>
+    const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/25893588/ug57brf';
 
+    document.getElementById('zapierForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        const status = document.getElementById('formStatus');
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        // Update UI to "Loading"
+        btn.disabled = true;
+        btn.innerText = 'Transmitting...';
+
+        try {
+            const response = await fetch(ZAPIER_WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Standard for Zapier webhooks
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // Since 'no-cors' doesn't return a status, we assume success if no error is thrown
+            status.classList.remove('hidden', 'text-red-400');
+            status.classList.add('text-evoq-gold');
+            status.innerText = 'Request received. Our executive team will reach out shortly.';
+            btn.innerText = 'Request Sent';
+            this.reset();
+
+        } catch (error) {
+            status.classList.remove('hidden', 'text-evoq-gold');
+            status.classList.add('text-red-400');
+            status.innerText = 'An error occurred. Please email elite@evoq.ke directly.';
+            btn.disabled = false;
+            btn.innerText = 'Submit Request';
+        }
+    });
+</script>
 </body>
 </html>
